@@ -1,0 +1,50 @@
+installation process: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/
+
+------------------------------------------------------------------------------------------
+install mongodb version 4.4 for mac os 10.15
+
+$ brew install mongodb-community@4.4
+
+------------------------------------------------------------------------------------------
+start server:
+$ brew services start mongodb-community@4.4
+
+stop:
+$ brew services stop mongodb-community@4.4
+
+------------------------------------------------------------------------------------------
+# start mongodb shell (after starting mongodb server in local machine)
+
+
+- The directory that contains the MongoDB binaries in my mac:
+  /usr/local/Cellar/mongodb-community@4.4/4.4.21/bin/
+
+
+- run 'mongo' in terminal from above directory
+
+
+------------------------------------------------------------------------------------------
+terminal setting
+
+
+-  check the current value of the PATH variable in terminal
+$ echo $PATH
+
+
+
+- Look for the directory that contains the MongoDB binaries (mongod, mongo, etc.) in the output.
+- If it's not present, I will need to add it to the PATH variable. 
+- I can do this by modifying my shell profile file (e.g., ~/.bash_profile, ~/.bashrc, or ~/.zshrc) and adding the following line:
+
+export PATH="/usr/local/Cellar/mongodb-community@4.4/4.4.21/bin/mongod:$PATH"
+
+
+- Check mongodb version
+$ mongod --version
+
+
+
+
+
+
+

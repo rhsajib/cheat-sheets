@@ -1,0 +1,209 @@
+
+
+
+git config --global user.name 'rhsajib'
+git config --global user.email 'sajib.mmebuet@gmail.com'
+
+git config --list
+git config user.name
+git config user.email
+
+
+git init
+ls -a
+
+touch test.txt
+open test.txt
+
+git status
+git add <file>				# git add test.txt
+git add .				# stage all from
+
+
+
+git rm --cached test.txt 		# unstage
+git reset			 	# unstage all files of the directory
+git reset --staged <file>      		# unstage
+
+
+
+git restore <file>               	# discard changes in working directory
+git restore --staged <file>     	# unstage
+
+
+git diff 				# see the changes of a file
+					# only works before 'git add <file>'
+
+
+git commit -m 'first commit'
+git add . && git commit -m 'message' 	# stage and commit together (preferable)
+git commit -am "Your commit message"    # stage and commit together (not preferable)
+
+
+git log					# see commit history in detail
+git log --oneline			# see commit history in brief
+
+:q					# exit from git log
+
+
+
+git show 				# details of last commit
+git show HEAD				# details of HEAD commit
+git show <commit_id>			# git show d355c67
+
+git show HEAD~3				# display the details of the commit that is 
+					# three commits before the current HEAD commit
+
+
+
+
+git reset HEAD^				# uncommit and remove from staging area.
+git reset --soft HEAD^			# uncommit recent commit.
+
+git reset --soft HEAD~2			# will reset the HEAD to two commits before 
+					# the current HEAD position.	
+					# while preserving the changes from those commits   
+					# in the staging area.
+					# the changes from the last two commits will be 
+					# uncommitted and staged, and we can modify them 
+					# before committing them again 
+
+git reset --hard HEAD^			# will move HEAD to the previous commit
+	   			   	# and permanently remove everything 
+					# after the previous commit.
+ 
+git reset --hard HEAD~3			# will reset the HEAD to three commits before 
+					# the current HEAD position.	
+					# it will permanently remove the changes from 
+					# those commits entirely 
+
+
+
+git checkout <branch_name>		# switch HEAD to a different branch
+git checkout HEAD~2			# switch HEAD to two commits before 
+git checkout <commit_id>		# switch HEAD to a certain ID
+
+git checkout <commit_id> -- <file_path> # revert a specific file to a previous state
+					# This will replace the current version of 
+					# the file with the version 
+					# from the specified commit.
+
+git checkout test2.txt            	# undo/discard the changes before staging
+git checkout master			# switch HEAD to the recent or top commit
+
+ 
+
+
+# switch to a certain commit id and return back to the recent or master branch
+git checkout <commit_id>              	# switch the HEAD to a certain ID 
+git checkout master		  	# return back to recent commit or top HEAD
+
+checkout করে কোনো id তেহ গিয়ে তাকে modify করে git status check করলে দেখা যাবে সেটি modify হইসে।
+কিন্তু পরে checkout করে আবার recent commit or top HEAD এ চলে এসে git status check করলে দেখা যাবে সেটি আগের মতই আসে। কোনো change হয় নাই।
+
+
+
+----------------------------------------------------------------------------
+Using 'master' as the name for the initial branch. This default branch name
+is subject to change. To configure the initial branch name to use in all
+of your new repositories, which will suppress this warning, call:
+
+
+git config --global init.defaultBranch <name> 
+
+
+Names commonly chosen instead of 'master' are 'main', 'trunk' and
+'development'. The just-created branch can be renamed via this command:
+
+
+git branch -m <name>
+
+----------------------------------------------------------------------------
+
+
+# Here, origin will refer this url.
+
+# git remote add is used to add a new remote repository to your Git configuration.
+# git remote set-url is used to change or set the URL of an existing remote repository that you've previously added. 
+
+git remote add origin <HTTPS url from github>
+git remote add origin https://github.com/rhsajib/id-test.git     
+
+# Change the 'origin' remote's URL
+git remote set-url origin https://github.com/ghost/ReactiveCocoa.git
+
+# check remote origin
+git remote
+git remote -v
+
+# remove remote url from origin
+git remote remove origin
+git remote rm origin
+
+
+git push
+git push origin main
+
+# set the remote branch as the upstream branch
+git push --set-upstream origin main
+or short form,   git push -u origin main
+
+git pull
+git pull origin main
+
+
+
+
+
+
+
+# step to connect a directory to a remote repository
+- cd /path/to/myfolder
+
+
+- git init
+- git add sajib.txt
+- git commit -m "Initial commit"
+
+
+- git remote add origin https://github.com/<github_username>/afsana.git
+
+
+- git fetch origin
+- git merge origin/main
+
+
+- git push -u origin main
+
+
+
+
+
+
+# gitignore
+
+touch .gitignore
+
+.gitignore file এ লেখার নিয়মঃ
+
+.env
+*.txt
+!story.txt    সব .txt file কে ignore করবে শুধু story.txt কে ignore করবে না
+folder/       অর্থ হচ্ছে এই folder এর মধ্যে সবকিছুকে সে ignore করবে। 
+temp/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

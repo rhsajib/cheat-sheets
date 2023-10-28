@@ -1,0 +1,50 @@
+
+
+
+
+
+### Generate access token from github account
+
+Ref: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+
+### Use access token in mac
+
+Ref: https://gist.github.com/jonjack/bf295d4170edeb00e96fb158f9b1ba3c
+
+#### Using an Access Token for the first time
+
+Tell Git you want to store credentials in the osxkeychain by running the following:-
+
+~ % git config --global credential.helper osxkeychain
+
+
+Add your access token to the osxkeychain
+
+$ git clone https://github.com/username/repo.git
+
+Cloning into 'repo'...
+Username for 'https://github.com': your_github_username
+Password for 'https://username@github.com': your_access_token
+
+
+
+#### Updating an existing Access Token
+1. Regenerate token on Github
+
+Github console Settings -> Developer settings -> Personal access tokens.
+
+2. Remove an existing token from your Mac keychain
+
+~ % $ git credential-osxkeychain erase
+
+3. Then pull or push to github. It will need password. Just put access token instead of password.
+
+
+
+
+
+
+
+
+
