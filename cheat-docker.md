@@ -53,6 +53,17 @@ Run or Pull images from dockerhub
 ~ % docker run hello-world
 ```
 
+```sh
+Push docker image
+# step-1 : create new repository in dockerhub (i.e. rhsajib/chatp-root-react)
+# step-2 : build docker image with specific tag
+    ~ % docker build -t rhsajib/chatp-root-react:v1.0 ./frontend
+# step-3 : push image to dockerhub
+    ~ % docker push rhsajib/chatp-root-react:v1.0
+```
+
+
+
 ```
 List of all running containers
 ~ % docker ps
