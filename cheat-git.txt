@@ -16,8 +16,9 @@ touch test.txt
 open test.txt
 
 git status
-git add <file>				# git add test.txt
-git add .				# stage all from
+git add <file>						# git add test.txt
+git add <file> <file> <file>		# git add multiple files
+git add .							# stage all from
 
 
 
@@ -31,8 +32,25 @@ git restore <file>               	# discard changes in working directory
 git restore --staged <file>     	# unstage
 
 
-git diff 				# see the changes of a file
-					# only works before 'git add <file>'
+
+- If we make changes to the file but haven't staged them, 
+- the following command will show the differences between our working directory and the last commit.
+
+git diff
+
+
+- the following command will display the differences 
+- between the current state of the file and the last committed state
+
+git diff <file>			
+
+
+- If we stage the changes using git add, and we want to see the differences 
+- between the staged changes and the last commit, we can use the following command:
+
+git diff --staged <file>
+
+
 
 
 git commit -m 'first commit'
