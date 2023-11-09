@@ -34,6 +34,28 @@ npm install
 ```sh
 npm run dev
 ```
+### Configure react vite for docker image
+
+```jsx
+// vite.config.js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+// https://vitejs.dev/config/
+
+export default defineConfig({
+    plugins: [react()],
+    server: {
+        watch: {
+            usePolling: true,
+        },
+        host: true, // needed for the Docker Container port mapping to work
+        strictPort: true,
+        port: 5173, // you can replace this port with any port
+    },
+});
+```
+
 
 ### Remove red waved line form a variable that is not used in vs code
 ```js
@@ -46,6 +68,9 @@ module.exports = {
   env: { browser: true, es2020: true, node: none },
 }
 ```
+
+
+
 
 ### Create Component
 
