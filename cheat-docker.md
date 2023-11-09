@@ -43,7 +43,19 @@ Change directory to the destination dericroy where Dockerfile exists
 Run docker image
 ~ % docker run -p 5173:5173 -d <tag_name_or_image_id>
 5173:5173 defines port_for_app:port_for_image
+
+docker run -it -p 5173:5173 --name <container_name> <image_name_with_tag>
+
+# detach mode
+docker run -it -d -p 5173:5173 --name <container_name> <image_name_with_tag>
 ```
+
+```sh
+# example
+docker build -t rhsajib/react-demo:v1.0 .
+docker run -it -p 5173:5173 --name react-demo rhsajib/react-demo:v1.0
+```
+
 
 ```
 Run or Pull images from dockerhub
