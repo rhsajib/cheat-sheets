@@ -177,6 +177,12 @@ def delete_post(id: int):
 ```zsh
 # installing Psycopg2 in mac
 
+~ % pip install psycopg2-binary
+
+
+# if you encounter any issue during installation, go through the following steps
+
+
 # in vs code terminal inside the working virtual environment
 # set environment veriables for postgresql
 ~ % export PG_HOME=/Library/PostgreSQL/15
