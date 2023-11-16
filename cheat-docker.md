@@ -214,6 +214,87 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 ```
 
 
+```docker
+# docker-compose.yaml sample
+
+version: '3.9'
+
+services:
+  react:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend/src:/app/src
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - fastapi
+  
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/app/.env
+    volumes:
+      - ./backend:/app
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017  # Reference the MongoDB 
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - mongo
+      - redis
+      - celery_worker
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:latest
+
+  
+  celery_worker:
+    build: ./backend
+    command: celery -A app.services.worker.celery.celery worker --loglevel=info
+    env_file:
+      - ./backend/app/.env 
+    volumes:
+      - ./backend:/app
+    environment: 
+      - MONGODB_URI=mongodb://mongo:27017  # Reference the MongoDB service
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      
+  flower:
+    build: ./backend  
+    # command: flower -A app.services.worker.celery.celery --port=5555
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    # command: flower --broker=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    env_file:
+      - ./backend/app/.env
+    environment: 
+      - MONGODB_URI=mongodb://mongo:27017  # Reference the MongoDB service
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - fastapi
+      - celery_worker
+      - redis
+ 
+```
+
 ```
 ##############################################################################
 # DOCKER
