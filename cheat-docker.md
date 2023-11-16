@@ -1,137 +1,145 @@
-#### Install Docker
+### Install Docker
 - https://github.com/docker/for-mac/issues/6671
 - [Suitable latest version(4.15) of docker for mac os catalina 10.15.7](https://desktop.docker.com/mac/main/amd64/93002/Docker.dmg)
 - [Docker Desktop release notes](https://docs.docker.com/desktop/release-notes/)
 
-#### Commands for terminal
-After installing docker desktop
-```
-Login to docker (if not logged in)
-~ % docker login
+### Commands for terminal
+
+```sh
+# After installing docker desktop
+docker login                            # Login to docker (if not logged in)
+
+# If any error occurs after login, try logout first, then login again
+docker logout
+docker login
 ```
 
-```
-If any error occurs after login, try logout first, then login again
-~ % docker logout
-~ % docker login
-```
 
-```
-Create Dockerfile
+```sh
+# Build docker image
+# First create Dockerfile  (see below)
+# Change directory to the destination dericroy where Dockerfile exists
 
-see below
-```
-```
-Build docker image
-Change directory to the destination dericroy where Dockerfile exists
 
-~ % docker build -t <tag_name_for_image> .
+docker build -t <tag_name_for_image> .     # Create image using this directory's Dockerfile
+docker build -t friendlyname .             # example   
+
 -> here, i can assign any tag name for image
--> at the the dot ('.') notation is used to build a Docker image based on the contents of the current directory (represented by .)
+-> at the the dot ('.') notation is used to build a Docker image based on
+-> the contents of the current directory (represented by .)
 
-~ % docker build .
+
+docker build .
+
 -> it wll create a docker image without a tag name
 -> by default its tag name will be <none>
 
 
 -> Suppose my docker file name is Dockerfile.dev 
 -> I can specify a different Dockerfile with the -f (flag) option like the following one
-~ % docker build -f Dockerfile.dev .
+
+docker build -f Dockerfile.dev .
 ```
 
-```
-Run docker image
-~ % docker run -p 5173:5173 -d <tag_name_or_image_id>
-5173:5173 defines port_for_app:port_for_image
 
-docker run -it -p 5173:5173 --name <container_name> <image_name_with_tag>
 
-# detach mode
-docker run -it -d -p 5173:5173 --name <container_name> <image_name_with_tag>
-```
 
 ```sh
+# Run or Pull images from dockerhub
+docker run hello-world
+# or
+docker pull hello-world
+
+# Run image from a registry
+docker run username/repository:tag          
+
+
+# Run docker image
+docker run -p 5173:5173 <tag_name_or_image_id>    # 5173:5173 defines port_for_app:port_for_image
+docker run -it -p 5173:5173 --name <container_name> <image_name_with_tag>
+docker run -it -d -p 5173:5173 --name <container_name> <image_name_with_tag>    # detach mode
+
+
 # example
+docker run -p 4000:80 friendlyname          # Run "friendlyname" mapping port 4000 to 80
+docker run -d -p 4000:80 friendlyname       # Same thing, but in detached mode
+
 docker build -t rhsajib/react-demo:v1.0 .
 docker run -it -p 5173:5173 --name react-demo rhsajib/react-demo:v1.0
 ```
 
+```sh
+docker tag <image> username/repository:tag  # Tag <image> for upload to registry
+docker push username/repository:tag         # Upload tagged image to registry
 
+# example
+# Push docker image
+# step-1 : create new repository in dockerhub (i.e. rhsajib/chatp-root-react)
+
+# step-2 : build docker image with specific tag
+docker build -t rhsajib/chatp-root-react:v1.0 ./frontend
+
+# step-3 : push image to dockerhub
+docker push rhsajib/chatp-root-react:v1.0
 ```
-Run or Pull images from dockerhub
-~ % docker run hello-world
-# or
-~ % docker pull hello-world
-~ % docker run hello-world
+
+
+```sh
+# images
+
+docker images                       # Show all images on this machine
+docker images -a                    
+docker rmi <imagename>              # Remove the specified image from this machine
+docker rmi $(docker images -q)      # Remove all images from this machine
+```
+
+
+```sh
+# containers
+
+docker ps                                   # List of all running containers
+docker ps -a                                # List of running and stopped containers
+docker start <container-id>                 # Start a docker container
+docker stop <container-id>                  # Stop a docker container
+docker kill <hash>                          # Force shutdown of the specified container
+docker rm <container-id>                    # Remove a container
+docker rm -f <container-id>                 # Remove force specified container from this machine
+docker rm $(docker ps -a -q)                # Remove all containers from this machine
+docker logs <container-id> -f               # Live tail a container's logs
+```
+
+
+
+```sh
+# volume
+
+docker volume ls                            # List volumes
+docker volume inspect <volume_name>         # Display detailed information on one or more volumes
+docker volume crate                         # Create a volume
+docker volume rm                            # Remove one or more volumes
+docker volume prune                         # Remove all unused local volumes
 ```
 
 ```sh
-Push docker image
-# step-1 : create new repository in dockerhub (i.e. rhsajib/chatp-root-react)
-# step-2 : build docker image with specific tag
-    ~ % docker build -t rhsajib/chatp-root-react:v1.0 ./frontend
-# step-3 : push image to dockerhub
-    ~ % docker push rhsajib/chatp-root-react:v1.0
+docker system prune                         # Remove all unused containers, networks, images (both dangling and unreferenced), and optionally, volumes. (Docker 17.06.1-ce and superior)
+docker system prune -a                      # Remove all unused containers, networks, images not just dangling ones (Docker 17.06.1-ce and superior)
+docker volume prune                         # Remove all unused local volumes
+docker network prune                        # Remove all unused networks
 ```
 
 
+### Work with interective executable docker container
 
-```
-List of all running containers
-~ % docker ps
-```
-
-```
-List of running and stopped containers
-~ % docker ps -a
-```
-
-```
-Start a docker container
-~ % docker start <container-id>
-```
-
-```
-Stop a docker container
-~ % docker stop <container-id>
-```
-```
-Remove a container
-~ % docker rm <container-id>
-```
-```
-Remove force specified container from this machine
-~ % docker rm -f <container-id>
-```
-```
-Remove all containers from this machine
-~ % docker rm $(docker ps -a -q)
-```
-
-```
-Show all images on this machine
-~ % docker images
-~ % docker images -a
-```
-```
-Remove the specified image from this machine
-~ % docker rmi <imagename>
-```
-
-```
-Remove all images from this machine
-~ % docker rmi $(docker images -q)
-```
-
-#### Work with interective executable docker container
-```
+```sh
 By default exec work on `sh` shell
-~ % docker exec -it <container_name> sh
-~ % docker exec -it chatp-root-fastapi-1 sh
+docker exec -it <container_name> sh
+docker exec -it chatp-root-fastapi-1 sh
+
+docker exec -it <container_id> bash         # Enter a running container
 ```
 
 
-```
+```sh
 To work in zsh shell, inclue the following lines in Dockerfile.
 So, we can ensure that zsh is available inside the container.
 
@@ -144,15 +152,23 @@ RUN apt-get update && apt-get install -y bash
 # Set zsh as the default shell
 RUN chsh -s /usr/bin/zsh
 ```
+
+
+```sh
+# After building the Docker image with these changes, you can use zsh inside the container:
+docker exec -it chatp-root-fastapi-1 zsh
 ```
-After building the Docker image with these changes, you can use zsh inside the container:
-~ % docker exec -it chatp-root-fastapi-1 zsh
+
+
+```sh
+# Run the database migrations in django:
+docker-compose exec <container_name> python manage.py migrate --noinput
 ```
 
 
 
-#### Dockerfile 
-```
+### Dockerfile 
+```sh
 # Dockerfile for react vite
 
 # Use an official Node runtime as a parent image
@@ -171,10 +187,10 @@ RUN npm i
 COPY . .
 
 # Start the development server with npm run dev
-CMD [ "npm", "run", "dev"]
+CMD ["npm", "run", "dev"]
 ```
 
-```
+```sh
 # Dockerfile for FastAPI
 
 # Use an official Python runtime as a parent image
@@ -213,14 +229,15 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 # CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-
-```docker
+### docker-compose
+```sh
 # docker-compose.yaml sample
 
 version: '3.9'
 
 services:
   react:
+    container_name: react-container   # this is optional
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -256,6 +273,10 @@ services:
     image: mongo
     ports:
       - "27017:27017"
+    volumes: 
+      - mongo_data:/data/db   
+    networks:                     # optional
+      - node-network
 
   redis:
     image: redis:latest
@@ -292,6 +313,15 @@ services:
       - fastapi
       - celery_worker
       - redis
+
+# volumes is for data persistency      
+volumes:
+  mongo_data:
+    driver: local     # You can use other volume drivers based on your requirements
+
+networks:
+  node-network:
+    driver: bridge
  
 ```
 
