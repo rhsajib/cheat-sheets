@@ -365,6 +365,7 @@ docker-compose up                               # Create and start containers
 docker-compose up -d                            # Create and start containers in detached mode
 docker-compose build                            # Build all image service
 docker-compose down                             # Stop and remove containers, networks, images, and volumes
+docker-compose down -v                          # removes the volumes associated with the containers
 docker-compose logs                             # View output from containers
 docker-compose restart                          # Restart all service
 docker-compose pull                             # Pull all image service 
