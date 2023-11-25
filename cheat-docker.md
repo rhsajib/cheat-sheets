@@ -229,6 +229,50 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 # CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
+### Handle environment variables.
+```
+# any environment variable defined in docker-compose.yaml file 
+# will override the variable defined in .env file
+```
+
+```
+# .env
+
+DB_HOST=127.0.0.1
+DB_PORT=5432
+```
+
+```
+# docker-compose.yaml
+
+
+version: '3.9'
+services:
+  django-app:
+    build: 
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+    env_file:
+      - ./backend/app/.env
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15
+    env_file:
+      - ./backend/app/.env
+```
+
+```'
+# here, local machine 'DB_HOST' will be '127.0.0.1'
+# but for django-app docker container, 'DB_HOST' will be 'db' service
+```
+
+
+
 ### docker-compose
 ```sh
 # docker-compose.yaml sample
