@@ -130,6 +130,8 @@ docker network prune                        # Remove all unused networks
 
 ### Work with interective executable docker container
 
+#### For `docker-compose.yaml` file
+
 ```sh
 By default exec work on `sh` shell
 docker exec -it <container_name> sh
@@ -162,7 +164,20 @@ docker exec -it chatp-root-fastapi-1 zsh
 
 ```sh
 # Run the database migrations in django:
-docker-compose exec <container_name> python manage.py migrate --noinput
+docker-compose exec <service_name_medntioned-in_docker_compose_.yaml_file> python manage.py migrate --noinput
+```
+
+
+#### For `docker-compose-local.yaml` file
+
+```sh
+docker-compose -f docker-compose-local.yml build
+docker-compose -f docker-compose-local.yml up -d
+docker-compose -f docker-compose-local.yml down 
+
+docker-compose -f docker-compose-local.yml exec web python manage.py makemigrations  
+docker-compose -f docker-compose-local.yml exec web python manage.py migrate
+# here `web` is service name used in docker-compose-local.yaml file
 ```
 
 
