@@ -201,10 +201,111 @@ DATABASE = {
         }
     }
 ```
+
+### CORS
+CORS (Cross-Origin Resource Sharing) is a security feature implemented by web browsers to restrict web pages from making requests to a different domain than the one that served the web page. If you have a Django application and you want to allow it to be accessed from a different domain (e.g., when making API requests from a frontend application hosted on a different domain), you'll need to configure CORS.
+
+To enable CORS in a Django application, you can use the `django-cors-headers` package. Here's a step-by-step guide on how to set it up:
+
+#### Install `django-cors-headers`:
+
+```bash
+pip install django-cors-headers
+```
+
+#### Update Django Settings:
+
+1. Add `'corsheaders'` to your `INSTALLED_APPS` in your Django project's settings:
+
+   ```python
+   # settings.py
+
+   INSTALLED_APPS = [
+       # ...
+       'corsheaders',
+       # ...
+   ]
+   ```
+
+2. Add `'corsheaders.middleware.CorsMiddleware'` to your `MIDDLEWARE`:
+
+   ```python
+   # settings.py
+
+   MIDDLEWARE = [
+       # ...
+       'corsheaders.middleware.CorsMiddleware',
+       # ...
+   ]
+   ```
+
+3. Configure CORS settings. You can set `CORS_ORIGIN_ALLOW_ALL` to `True` if you want to allow all origins, or you can specify specific origins using `CORS_ALLOWED_ORIGINS`. For development, you can use the wildcard (`'*'`) to allow all origins:
+
+   ```python
+   # settings.py
+
+   CORS_ALLOWED_ORIGINS = [
+       "http://localhost:3000",  # Example: React development server
+       "https://yourfrontenddomain.com",
+   ]
+
+   # If you want to allow all origins, you can use:
+   # CORS_ORIGIN_ALLOW_ALL = True
+   ```
+
+   Adjust the allowed origins based on your frontend application's domain.
+
+#### Django Application Settings:
+
+Ensure that your Django application's view or API endpoint is set up to handle CORS. For example, in a Django REST Framework view, you might use the `@api_view` decorator and the `@permission_classes` decorator:
+
+```python
+# views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def example_view(request):
+    data = {'message': 'Hello, CORS is enabled!'}
+    return Response(data)
+```
+
+Now, your Django application should be configured to allow requests from the specified origins. Adjust the settings according to your specific requirements and security considerations.
+
+
 ### Models
+There are seven possible actions to take when such event occurs:
+
+- CASCADE: When the referenced object is deleted, also delete the objects that have references to it (when you remove a blog post for instance, you might want to delete comments as well). SQL equivalent: CASCADE.
+- PROTECT: Forbid the deletion of the referenced object. To delete it you will have to delete all objects that reference it manually. SQL equivalent: RESTRICT.
+- RESTRICT: (introduced in Django 3.1) Similar behavior as PROTECT that matches SQL's RESTRICT more accurately. (See django documentation example)
+- SET_NULL: Set the reference to NULL (requires the field to be nullable). For instance, when you delete a User, you might want to keep the comments he posted on blog posts, but say it was posted by an anonymous (or deleted) user. SQL equivalent: SET NULL.
+- SET_DEFAULT: Set the default value. SQL equivalent: SET DEFAULT.
+SET(...): Set a given value. This one is not part of the SQL standard and is entirely handled by Django.
+- DO_NOTHING: Probably a very bad idea since this would create integrity issues in your database (referencing an object that actually doesn't exist). SQL equivalent: NO ACTION. (2)
+Source: Django documentation
+
+See also the documentation of PostgreSQL for instance.
+
+In most cases, CASCADE is the expected behaviour, but for every ForeignKey, you should always ask yourself what is the expected behaviour in this situation. PROTECT and SET_NULL are often useful. Setting CASCADE where it should not, can potentially delete all of your database in cascade, by simply deleting a single user.
+
+Additional note to clarify cascade direction
+
+It's funny to notice that the direction of the CASCADE action is not clear to many people. Actually, it's funny to notice that only the CASCADE action is not clear. I understand the cascade behavior might be confusing, however you must think that it is the same direction as any other action. Thus, if you feel that CASCADE direction is not clear to you, it actually means that on_delete behavior is not clear to you.
+
+In your database, a foreign key is basically represented by an integer field which value is the primary key of the foreign object. Let's say you have an entry comment_A, which has a foreign key to an entry article_B. If you delete the entry comment_A, everything is fine. article_B used to live without comment_A and don't bother if it's deleted. However, if you delete article_B, then comment_A panics! It never lived without article_B and needs it, it's part of its attributes (article=article_B, but what is article_B???). This is where on_delete steps in, to determine how to resolve this integrity error, either by saying:
+
+- "No! Please! Don't! I can't live without you!" (which is said PROTECT or RESTRICT in Django/SQL)
+- "All right, if I'm not yours, then I'm nobody's" (which is said SET_NULL)
+- "Good bye world, I can't live without article_B" and commit suicide (this is the CASCADE behavior).
+- "It's OK, I've got spare lover, I'll reference article_C from now" (SET_DEFAULT, or even SET(...)).
+- "I can't face reality, I'll keep calling your name even if that's the only thing left to me!" (DO_NOTHING)
+I hope it makes cascade direction clearer. :)
+
 ```python
 # models.py
-
 
 import uuid
 from django.db import models
@@ -2595,7 +2696,7 @@ def logout_user(request):
 {% endif %}
 ```
 
-### Celery
+### Celery Integration
 
 
 ```python
@@ -2612,6 +2713,7 @@ django_project/
         settings.py
         celery.py
     taskapp/
+        tasks.py
         any_file.py
 
 ```
@@ -2695,20 +2797,27 @@ add_task.delay(4, 5)
 
 
 ```python
-# starting a Celery worker using the dcelery app and setting the log level to INFO
+# ***********************************************************************
+# To run celery, at first we need to change directory to project folder
+# otherwise celery do not discover the tasks
+# this is v.v.i
+# ***********************************************************************
+~ % cd django_project
 
-~ % celery -A dcelery worker --loglevel=INFO
+# starting a Celery worker using the 'core' app and setting the log level to INFO
+
+~ % celery -A core worker --loglevel=INFO
 # or
-~ % celery --app=dcelery worker -l INFO
+~ % celery --app=core worker -l INFO
 ```
 
-**Command 1:** `celery -A dcelery worker --loglevel=INFO`
-   - `-A dcelery`: Specifies the Celery app to use, which is `dcelery` in this case.
+**Command 1:** `celery -A core worker --loglevel=INFO`
+   - `-A core`: Specifies the Celery app to use, which is `core` in this case because file name with `celery.py` is inside this 'core' directory.
    - `worker`: Indicates that you want to start a Celery worker.
    - `--loglevel=INFO`: Sets the log level for the worker to INFO.
 
-**Command 2:** `celery --app=dcelery worker -l INFO`
-   - `--app=dcelery`: Specifies the Celery app to use, which is `dcelery` in this case.
+**Command 2:** `celery --app=core worker -l INFO`
+   - `--app=core`: Specifies the Celery app to use, which is `core` in this case.
    - `worker`: Indicates that you want to start a Celery worker.
    - `-l INFO`: Short form of `--loglevel=INFO`, which sets the log level for the worker to INFO.
 
