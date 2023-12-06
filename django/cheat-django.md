@@ -275,6 +275,57 @@ def example_view(request):
 Now, your Django application should be configured to allow requests from the specified origins. Adjust the settings according to your specific requirements and security considerations.
 
 
+### Swagger API generator
+
+```sh
+pip install -U drf-yasg
+```
+
+```python
+# settings.py
+
+INSTALLED_APPS = [
+   ...
+   'django.contrib.staticfiles',  # required for serving swagger ui's css/js files
+   'drf_yasg',
+   ...
+]
+```
+
+```python
+# urls.py
+...
+from django.urls import re_path
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+...
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="My API",
+      default_version='v1',
+      description="write description",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
+urlpatterns = [
+   path('docs/', schema_view.with_ui('swagger', cache_timeout=0),name='schema-swagger-ui'),
+
+   # extra
+   path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+   path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+   ...
+]
+```
+
+
 ### Models
 There are seven possible actions to take when such event occurs:
 
@@ -632,6 +683,46 @@ class Post(models.Model):
     ......
 {% endfor %}
 ```
+
+### AUTH_PASSWORD_VALIDATORS
+
+```py
+
+# if DATABASES['default']['HOST']:
+#     print('*********************************************')
+#     print('HOST: ', DATABASES['default']['HOST'])
+#     print('*********************************************')
+
+
+# Password validation
+# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+# https://www.youtube.com/watch?v=-mEICwwmtjw&ab_channel=VeryAcademy
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'OPTIONS':{
+            'user_attributes':(
+                'username', 'email', 'first_name', 'last_name'
+            ),
+            'max_similarity': 0.5
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS':{
+            'min_length': 6,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+```
+
 
 ### Signals
 Reference: 
