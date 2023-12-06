@@ -205,6 +205,68 @@ print(f"Name: {john.name}")
 print(f"Is Adult: {john.is_adult}")
 ```
 
+
+In Python, we can add class properties by using the `@property` decorator or by defining class methods that act as properties. Here's an explanation of both approaches:
+
+#### Using `@property` Decorator:
+
+The `@property` decorator is used to define a getter method for a class attribute. This getter method can be accessed like an attribute but is calculated dynamically. Here's an example:
+
+```python
+class MyClass:
+    def __init__(self, value):
+        self._value = value  # Note: Prefixing with an underscore is a common convention for private attributes
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        if new_value < 0:
+            raise ValueError("Value must be non-negative")
+        self._value = new_value
+
+# Usage
+obj = MyClass(42)
+print(obj.value)  # Accessing the property
+obj.value = 50    # Setting the property
+print(obj.value)  # Accessing the updated property
+```
+
+In this example, `value` is a class property, and it has a getter (`@property` method) and a setter (`@value.setter` method).
+
+#### Using Class Method as Property:
+
+You can also use a class method as a property. This method is similar to the `@property` approach but gives you more control over the property behavior:
+
+```python
+class MyClass:
+    def __init__(self, value):
+        self._value = value
+
+    @classmethod
+    def get_value(cls):
+        return cls._value
+
+    @classmethod
+    def set_value(cls, new_value):
+        if new_value < 0:
+            raise ValueError("Value must be non-negative")
+        cls._value = new_value
+
+# Usage
+obj = MyClass(42)
+print(obj.get_value())   # Accessing the property
+obj.set_value(50)        # Setting the property
+print(obj.get_value())   # Accessing the updated property
+```
+
+In this example, `get_value` and `set_value` are class methods acting as properties.
+
+The `@property` decorator is more concise and Pythonic, while class methods provide more flexibility in terms of property behavior.
+
+
 Let's explore a few more techniques for writing Python classes. In these examples, I'll introduce class inheritance, class methods, and class variables.
 
 ### 4. Using Class Inheritance:
@@ -347,6 +409,8 @@ print(f"Rectangle Area: {rectangle.area()}")
 ```
 
 In this example, `Shape` is an abstract base class with an abstract method `area()`. The `Circle` and `Rectangle` classes inherit from `Shape` and provide concrete implementations of the `area` method.
+
+Here, `Shape` is an abstract base class, and `area` is an abstract method. Any class that inherits from `Shape` must provide a concrete implementation for the `area` method. This enforces that all concrete subclasses of `Shape` must have a method to calculate the `area`, but the specific implementation is left to the subclasses.
 
 ### 8. Using Data Classes:
 
@@ -1420,3 +1484,34 @@ obj.extension_method()
 
 Here, `extend_class_with_decorator` is a function that dynamically creates a new class by inheriting from two existing classes using a decorator.
 
+
+### 51. Use of static method.
+When you define a method as `@staticmethod` within a class, you don't need an instance of the class to call that method. Static methods can be called on the class itself, and they are not bound to any instance of the class.
+
+In the example I provided:
+
+```python
+class PasswordManager:
+    @staticmethod
+    def hash_password(password):
+        # Hash the password using bcrypt
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        return hashed_password.decode('utf-8')
+
+    @staticmethod
+    def validate_password(provided_password, hashed_password):
+        # Validate the provided password against the hashed password using bcrypt
+        return bcrypt.checkpw(provided_password.encode('utf-8'), hashed_password.encode('utf-8'))
+```
+
+You can use these static methods without creating an instance of `PasswordManager`. For example:
+
+```python
+from myapp.utils import PasswordManager
+
+# Call the static methods directly on the class
+hashed_password = PasswordManager.hash_password('my_password')
+is_valid_password = PasswordManager.validate_password('my_password', hashed_password)
+```
+
+This makes it convenient to use these utility methods across your codebase without the need to create instances of `PasswordManager`. It's a common pattern for utility functions or methods that don't depend on the state of an instance.
