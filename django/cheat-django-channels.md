@@ -1,16 +1,14 @@
-```python
-~ % pip install channels==3.0.5
+### Django Backend
 
-# if we use channels==4.0.0 we will need to configure more.
-```
-```
-~ % python3 manage.py startapp app
+```sh
+pip install channels
+pip install daphne
 ```
 
 ```python
 # project directory
 
-myproject/
+app/
     manage.py
     core/
         __init__.py
@@ -18,196 +16,237 @@ myproject/
         settings.py
         urls.py
         wsgi.py
-    app/
+    chat/
         __init__.py
         consumers.py
         routing.py
-        view.py
-        urls.py
-        templates/
-            app/
-                index.html
-
 ```
 
 ```python
 # core/settings.py
 
 INSTALLED_APPS = [
+    'daphne',  # put it first
     ..........
-    'channels',
-    'app',
 ]
 ```
 
 ```python
-# core/urls.py
+# chat/consumers.py
 
-from django.contrib import admin
-from django.urls import path, include
+import json
+from channels.generic.websocket import AsyncWebsocketConsumer
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('app/', include('app.urls')),
-]
+class ChatRoomConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = f'chat_{self.room_name}'
+        print('room_name', self.room_name)
+        print('room_group_name', self.room_group_name)
+
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+        # Send message to room group
+        # await self.channel_layer.group_send(
+        #     self.room_group_name,
+        #     {
+        #         "type": "tester_message",  # remember `tester_message` is a function
+        #         "message": 'Hello world'
+        #     }
+        # )
+
+    # async def tester_message(self, event):
+    #     tester = event['message']
+
+    #     # Send message through WebSocket
+    #     await self.send(text_data=json.dumps({"tester": tester}))
+
+    async def disconnect(self, close_code):
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    # Receive message from WebSocket
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json["message"]
+        print(message)
+
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "chat_message", "message": message}
+        )
+
+    async def chat_message(self, event):
+        message = event["message"]
+
+        # Send message through WebSocket
+        await self.send(text_data=json.dumps({"message": message}))
 ```
-
 
 ```python
-# app/urls.py
+# chat/routing.py
 
-from django.urls import path
-from . import views
-
-app_name = 'app'
-urlpatterns = [
-    path('random/', views.one, name='one'),
-]
-```
-
-```python
-# app/views.py
-from django.shortcuts import render
-
-def one(request):
-    context = {'words_text': 'ASD'}
-    return render(request, 'app/index.html', context=context)
-```
-
-```html
-# app/index.html
-
-<div>
-    <p id="word">{{ words_text }}</p>
-</div>
-
-<script>
-    const socket = new WebSocket(
-            'ws://'
-            + window.location.host                  //+ 'localhost:8000'
-            + '/ws/'
-            + 'any_url'
-            + '/'
-        );
-    
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log(data);
-        document.querySelector("#word").innerText = data.message;
-    };
-</script>
-```
-
-```python
-# app/routing.py
-from django.urls import path
+from django.urls import re_path
 from . import consumers
 
-ws_urlpatterns = [
-    path('ws/any_url/', consumers.OneConsumer.as_asgi())
+websocket_urlpatterns = [
+    re_path(r"ws/chat/(?P<room_name>\w+)/$", consumers.ChatRoomConsumer.as_asgi()),
 ]
-```
-
-```python
-# app/business.py
-import json
-from random_word import RandomWords
-
-class Domain:
-    def __init__(self):
-        self.R = RandomWords()
-
-    def do(self):
-        word = self.R.get_random_word()
-        return json.dumps({'word': word})
-
-
-
-
-# app/consumers.py
-import time
-from channels.generic.websocket import WebsocketConsumer
-from .business import Domain
-
-class OneConsumer(WebsocketConsumer):
-    def connect(self):
-        self.accept()
-
-        D = Domain()
-        for i in range(100):
-            data = D.do()
-            self.send(data)
-            time.sleep(2)
 ```
 
 ```python
 # core/asgi.py
+
 import os
+import chat.routing
+from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
-from channels.auth import AuthMiddlewareStack
-from app.routing import ws_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
+django_asgi_app = get_asgi_application()
+
 application = ProtocolTypeRouter(
     {
-        'http': get_asgi_application(),
-        'websocket': AuthMiddlewareStack(URLRouter(ws_urlpatterns))
+        "http": django_asgi_app,
+        'websocket': AuthMiddlewareStack(
+            URLRouter(
+                chat.routing.websocket_urlpatterns
+            )
+        )
     }
 )
+
+```
+
+```sh
+pip install channels_redis
 ```
 
 ```python
 # core/settings.py
 
-WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = 'core.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 ```
 
+### React Frontend
 
-```python
+```js
+// websockerEndPoints.js
 
+const WS_BASE_URL = "ws://127.0.0.1:8000";
+const client_id = "a4sfdkj490";
+
+export const WS = {
+    chat: `${WS_BASE_URL}/ws/chat/${client_id}/`,
+};
 ```
-```python
 
-```
-```python
+```js
+// Chat.jsx
+import React, { useEffect, useState } from "react";
+import { WS } from "../../services/websockerEndPoints";
 
-```
-```python
+const Chat = () => {
+    const [messages, setMessages] = useState([]);
+    const [messageText, setMessageText] = useState("");
+    const [socket, setSocket] = useState(null); // State to store the WebSocket instance
 
-```
-```python
+    useEffect(() => {
+        console.log(messages);
+        // Create a WebSocket instance
+        const newSocket = new WebSocket(WS.chat);
 
-```
-```python
+        newSocket.onopen = () => {
+            console.log("WebSocket connection established.");
+        };
 
-```
-```python
+        newSocket.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            console.log("Received Message:", data.message);
+            setMessages([...messages, data.message]);
+        };
 
-```
-```python
+        newSocket.onclose = () => {
+            console.log("WebSocket connection closed.");
+        };
 
-```
-```python
+        setSocket(newSocket);
 
-```
-```python
+        return () => {
+            // Clean up WebSocket when component unmounts
+            console.log("WebSocket cleaned up.");
+            newSocket.close();
+        };
+    }, [messages]);
 
-```
-```python
+    const handleFormSubmit = (e) => {
+        e.preventDefault(); // Prevent the default form submission behavior
 
-```
-```python
+        if (socket) {
+            const data = JSON.stringify({
+                message: messageText,
+            });
+            socket.send(data);
+            setMessageText("");
+        }
+    };
 
-```
-```python
+    return (
+        <div className="flex flex-col">
+            <div className="flex justify-center mt-4 py-2">
+                <h1 className="text-3xl">Welcome to chat room</h1>
+            </div>
 
-```
-```python
+            <div className="flex mt-4 mx-4">
+                <div className="w-1/2 flex flex-col justify-center">
+                    <form onSubmit={handleFormSubmit}>
+                        <input
+                            className="border border-blue-300 w-full h-12 mb-4 px-4 py-2 rounded-md"
+                            type="text"
+                            placeholder="write here..."
+                            id="message"
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                        />
 
-```
-```python
+                        <button
+                            type="submit"
+                            className="w-1/3 bg-cyan-500 rounded-md py-1 px-2"
+                        >
+                            Send
+                        </button>
+                    </form>
+                </div>
 
+                <div>
+                    {messages.map((msg, idx) => (
+                        <p key={idx}>{msg}</p>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Chat;
 ```
