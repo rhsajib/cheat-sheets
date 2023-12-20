@@ -479,6 +479,36 @@ urlpatterns = [
 ]
 ```
 
+```py
+# core/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from rest_framework import permissions
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/',
+        include([
+            path('users/', include('users.urls', namespace='users')),
+            path('convert/',
+                 include([
+                    path('text-to-pdf', include('text_to_pdf.urls', namespace='text_to_pdf'))
+                 ])
+            )
+        ])
+    )
+]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+```
+
 
 
 

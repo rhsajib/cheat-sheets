@@ -2,6 +2,8 @@
 - https://github.com/docker/for-mac/issues/6671
 - [Suitable latest version(4.15) of docker for mac os catalina 10.15.7](https://desktop.docker.com/mac/main/amd64/93002/Docker.dmg)
 - [Docker Desktop release notes](https://docs.docker.com/desktop/release-notes/)
+- [failed to solve with frontend dockerfile.v0](https://stackoverflow.com/questions/64221861/an-error-failed-to-solve-with-frontend-dockerfile-v0)
+
 
 ### Commands for terminal
 
@@ -52,6 +54,9 @@ docker pull hello-world
 
 # Run image from a registry
 docker run username/repository:tag          
+
+# Enter the file system of a Docker image
+docker run -it --rm your_image_name /bin/sh
 
 
 # Run docker image
@@ -125,6 +130,7 @@ docker system prune                         # Remove all unused containers, netw
 docker system prune -a                      # Remove all unused containers, networks, images not just dangling ones (Docker 17.06.1-ce and superior)
 docker volume prune                         # Remove all unused local volumes
 docker network prune                        # Remove all unused networks
+docker builder prune
 ```
 
 
@@ -172,6 +178,7 @@ docker-compose exec <service_name_medntioned-in_docker_compose_.yaml_file> pytho
 
 ```sh
 docker-compose -f docker-compose-local.yml build
+DOCKER_BUILDKIT=0 docker-compose -f docker-compose-intelsense.yaml build
 docker-compose -f docker-compose-local.yml up -d
 docker-compose -f docker-compose-local.yml down 
 

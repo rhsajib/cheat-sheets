@@ -1,4 +1,24 @@
+
+the main app, chat service, and file convert service are using the same Redis server for communication. The Channels layer in Django is configured with a Redis channel layer, and the different services connect to this common layer for communication through WebSocket and Redis Pub/Sub.
+
+This setup allows for a centralized communication channel through which different parts of your application can exchange messages asynchronously. If you have a distributed deployment and want to scale your application horizontally, you can configure multiple Django instances to use the same Redis server, ensuring that all instances share the same communication channel.
+
+If you have specific requirements, such as separating communication channels or using different Redis instances for each service, you can adjust the configuration accordingly. The goal is to provide a flexible and scalable architecture that suits your application's needs.
+
 ### Django Backend
+- https://reza-ta.medium.com/create-a-publish-subscriber-service-along-side-with-django-ed5337cb2bfb
+
+- https://medium.com/@nandagopal05/scaling-websockets-with-pub-sub-using-python-redis-fastapi-b16392ffe291
+- https://betterprogramming.pub/building-a-websocket-server-in-a-microservice-architecture-50c6c6432e2b
+
+- https://betterprogramming.pub/design-considerations-for-scaling-websocket-server-horizontally-with-a-publish-subscribe-pattern-fe6de9988400
+
+-   https://medium.com/@martindegesus1/real-time-progress-bar-using-django-channels-react-and-websockets-7845342418d6
+
+In django channels,
+consumers.py == views.py
+routing.py == urls.py
+
 
 ```sh
 pip install channels
