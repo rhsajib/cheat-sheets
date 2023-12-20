@@ -7,6 +7,8 @@ kafka-topics.sh --create --zookeeper zookeeper:2181 --partitions 1 --replication
 kafka-topics.sh --describe --zookeeper zookeeper:2181 --topic chat_service
 kafka-topics.sh --delete --zookeeper zookeeper:2181 --topic chat_service
 ```
+Remove Kafka and Zookeeper Data:
+rm -rf kafka-data zookeeper-data
 
 #### Configuration-1 (Basic)
 ```python
